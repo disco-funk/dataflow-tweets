@@ -41,19 +41,12 @@ public class TweetAnalyser {
 
         pipeline.apply(BigQueryIO.read()
                 .from("genuine-axe-182507:intalert.test"))
-                .apply(
-                    MapElements
-                        .into(TypeDescriptor.of(TableRow.class))
-                        .via((TableRow c) -> {
-                            TableRow newRow = new TableRow();
-                            String content = (String) c.get("content");
-                            newRow.set("content", content);
-                            newRow.set("timestamp", c.get("timestamp"));
-                            double sentiment = analyzer.getSentiment(content);
-                            newRow.set("sentiment", sentiment);
-                            return newRow;
-                        })
-                )
+                .apply(MapElements
+                                .into(TypeDescriptor.of(TableRow.class))
+                                .via(c -> new TableRow()
+                                        .set("content", c.get("content"))
+                                        .set("timestamp", c.get("timestamp"))
+                                        .set("sentiment", analyzer.getSentiment((String) c.get("content")))))
                 .apply(BigQueryIO.writeTableRows()
                         .to("genuine-axe-182507:intalert.analysed")
                         .withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_TRUNCATE)
