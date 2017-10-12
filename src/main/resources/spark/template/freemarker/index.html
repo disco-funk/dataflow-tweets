@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <meta http-equiv="refresh" content="10" >
+    </head>
+    <body>
+        <h1>Twitter Analytics</h1>
+
+        results:
+        <#list results as result>
+            <h2>${result.query}</h2>
+            <div id="myDiv${result.query}" style="width: 900px; height: 300px;"><!-- Plotly chart will be drawn inside this DIV --></div>
+            <script>
+
+                var days = [<#list result.days?keys as date>"${date}",</#list>];
+                var goodTweets = [<#list result.days?keys as date>"${result.days[date].goodTweets}",</#list>];
+                var badTweets = [<#list result.days?keys as date>"${result.days[date].badTweets}",</#list>];
+
+                var data = [
+                    {
+                        x: days,
+                        y: goodTweets,
+                        name: 'positive',
+                        type: 'bar'
+                    },
+                    {
+                        x: days,
+                        y: badTweets,
+                        name: 'negative',
+                        type: 'bar'
+                    }
+                ];
+
+                Plotly.newPlot('myDiv${result.query}', data, { barmode: 'stack'});
+            </script>
+        </#list>
+        <#list pending as query>
+            <h2>${query.keyword}...</h2>
+        </#list>
+
+        schedule new query:
+        <form action="/jobs/" method="post">
+            <input type="text" name="keyword" autofocus="autofocus">
+        </form>
+    </body>
+</html>
