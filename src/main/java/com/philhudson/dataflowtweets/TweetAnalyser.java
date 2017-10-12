@@ -40,13 +40,15 @@ public class TweetAnalyser {
         Pipeline pipeline = Pipeline.create(options);
 
         pipeline.apply(BigQueryIO.read()
-                .from("genuine-axe-182507:intalert.test"))
+                    .from("genuine-axe-182507:intalert.test"))
+                .setName("Read Input Data")
                 .apply(MapElements
                                 .into(TypeDescriptor.of(TableRow.class))
                                 .via(c -> new TableRow()
                                         .set("content", c.get("content"))
                                         .set("timestamp", c.get("timestamp"))
                                         .set("sentiment", analyzer.getSentiment((String) c.get("content")))))
+                .setName("Analyse Sentiment")
                 .apply(BigQueryIO.writeTableRows()
                         .to("genuine-axe-182507:intalert.analysed")
                         .withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_TRUNCATE)
